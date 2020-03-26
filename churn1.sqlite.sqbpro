@@ -1,0 +1,64 @@
+<?xml version="1.0" encoding="UTF-8"?><sqlb_project><db path="/Users/tatianabirgisson/Downloads/sql-population-queries-part-ii-solution/db.sqlite" foreign_keys="1" case_sensitive_like="0" temp_store="0" wal_autocheckpoint="1000" synchronous="2"/><attached/><window><current_tab id="3"/></window><tab_structure><column_width id="0" width="300"/><column_width id="1" width="0"/><column_width id="2" width="100"/><column_width id="3" width="1238"/><column_width id="4" width="0"/><expanded_item id="0" parent="1"/><expanded_item id="1" parent="1"/><expanded_item id="2" parent="1"/><expanded_item id="3" parent="1"/></tab_structure><tab_browse><current_table name="population_years"/><default_encoding codec=""/><browse_table_settings><table schema="main" name="countries" show_row_id="0" encoding="" plot_x_axis="" unlock_view_pk=""><sort/><column_widths/><filter_values/><display_formats/><hidden_columns/><plot_y_axes/></table><table schema="main" name="population_years" show_row_id="0" encoding="" plot_x_axis="" unlock_view_pk=""><sort/><column_widths/><filter_values/><display_formats/><hidden_columns/><plot_y_axes/></table></browse_table_settings></tab_browse><tab_sql><sql name="SQL 1">SELECT count(*) AS '# African countries'
+FROM countries
+WHERE continent = 'Africa';
+
+
+WITH joined_table AS (
+SELECT *
+FROM population_years)
+SELECT *
+FROM joined_table
+JOIN countries
+	ON joined_table.country_id = countries.id;
+
+SELECT sum(population), year, continent
+FROM joined_table
+WHERE continent = 'oceania' AND year = 2005;
+</sql><sql name="SQL 1">WITH months AS (
+  SELECT 
+    '2017-01-01' AS first_day, 
+    '2017-01-31' AS last_day 
+  UNION 
+  SELECT 
+    '2017-02-01' AS first_day, 
+    '2017-02-28' AS last_day 
+  UNION 
+  SELECT 
+    '2017-03-01' AS first_day, 
+    '2017-03-31' AS last_day
+), 
+cross_join AS (
+  SELECT *
+  FROM subscriptions
+  CROSS JOIN months
+), 
+status AS (
+  SELECT 
+    id, 
+    first_day AS month, 
+    CASE
+      WHEN (subscription_start &lt; first_day) 
+        AND (
+          subscription_end &gt; first_day 
+          OR subscription_end IS NULL
+        ) THEN 1
+      ELSE 0
+    END AS is_active, 
+    CASE
+      WHEN subscription_end BETWEEN first_day AND last_day THEN 1
+      ELSE 0
+    END AS is_canceled 
+  FROM cross_join
+), 
+status_aggregate AS (
+  SELECT 
+    month, 
+    SUM(is_active) AS active, 
+    SUM(is_canceled) AS canceled 
+  FROM status 
+  GROUP BY month
+) 
+SELECT
+  month, 
+  1.0 * canceled / active AS churn_rate 
+FROM status_aggregate;</sql><current_tab id="1"/></tab_sql></sqlb_project>
